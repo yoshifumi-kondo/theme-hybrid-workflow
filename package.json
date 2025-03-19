@@ -1,0 +1,28 @@
+{
+  "name": "theme-hybrid-workflow",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "open": "^10.1.0"
+  },
+  "scripts": {
+    "start": "bun run index.ts",
+    "init": "bun run index.ts init",
+    "extract-subtitles": "bun run index.ts extract-subtitles",
+    "edit-subtitles": "bun run index.ts edit-subtitles",
+    "extract-themes": "bun run index.ts extract-themes",
+    "extract-themes:gemini": "bun run index.ts extract-themes --provider google --model gemini-1.5-flash",
+    "extract-themes:openai": "bun run index.ts extract-themes --provider openai --model gpt-4-turbo",
+    "edit-themes": "bun run index.ts edit-themes",
+    "create-video": "bun run index.ts create-video",
+    "run-all": "bun run index.ts run-all",
+    "help": "bun run index.ts --help"
+  }
+}
