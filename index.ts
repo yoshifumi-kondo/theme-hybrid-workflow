@@ -96,7 +96,7 @@ program
   .command('create-video')
   .description('確認済みのテーマで動画を作成')
   .requiredOption('-p, --project <path>', 'プロジェクトディレクトリ')
-  .option('-f, --font-size <size>', 'フォントサイズ', '24')
+  .option('-f, --font-size <size>', 'フォントサイズ', '36')
   .option('-b, --bg-opacity <opacity>', '背景の不透明度 (0-1)', '0.5')
   .option('--fade <seconds>', 'フェードイン/アウト時間（秒）', '0.5')
   .option('--bg-style <style>', '背景スタイル (box/blur/shadow)', 'box')
@@ -141,45 +141,46 @@ program.parse();
 
 // プロジェクト初期化関数
 async function initProject(videoPath: string, projectDir: string, language: string): Promise<void> {
-  try {
-    console.log(`プロジェクトを初期化: ${projectDir}`);
+  // プロジェクトディレクトリが存在しない場合は作成
+  if (!existsSync(projectDir)) {
+    await mkdir(projectDir, { recursive: true });
+  }
+
+  // 設定ファイルパス
+  const configPath = join(projectDir, 'config.json');
+  
+  // 既存の設定ファイルがある場合は読み込む
+  let config: ProjectConfig;
+  
+  if (existsSync(configPath)) {
+    const content = await readFile(configPath, 'utf-8');
+    config = JSON.parse(content) as ProjectConfig;
+  } else {
+    // 入力動画ファイルのパス
+    const videoFileName = basename(videoPath);
     
-    // プロジェクトディレクトリが存在するか確認し、なければ作成
-    if (!existsSync(projectDir)) {
-      await mkdir(projectDir, { recursive: true });
-      console.log(`ディレクトリを作成しました: ${projectDir}`);
-    }
-    
-    // 元の動画ファイル名から出力ファイル名を生成
-    const videoBasename = basename(videoPath);
-    const nameWithoutExt = videoBasename.substring(0, videoBasename.lastIndexOf('.')) || videoBasename;
-    
-    // 設定ファイルを作成
-    const config: ProjectConfig = {
+    // 新しい設定を作成
+    config = {
       projectDir,
       videoFile: videoPath,
-      srtFile: join(projectDir, `${nameWithoutExt}.srt`),
-      themesFile: join(projectDir, `${nameWithoutExt}_themes.json`),
-      outputFile: join(projectDir, `${nameWithoutExt}_with_themes.mp4`),
+      srtFile: join(projectDir, `${videoFileName}.srt`),
+      themesFile: join(projectDir, 'themes.json'),
+      outputFile: join(projectDir, `${videoFileName.replace(/\.[^/.]+$/, '')}_with_themes.mp4`),
       language,
-      apiKey: '',
-      model: 'gemini-1.5-flash',
-      modelProvider: 'google',
-      fontSize: 24,
+      apiKey: process.env.OPENAI_API_KEY || '',
+      model: 'gpt-4',
+      modelProvider: 'openai',
+      fontSize: 36,
       bgOpacity: 0.5
     };
-    
-    // 設定をJSON形式で保存
-    const configPath = join(projectDir, 'project_config.json');
-    await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
-    
-    console.log('プロジェクト初期化が完了しました！');
-    console.log('次のステップ:');
-    console.log(`1. 字幕を抽出: bun run index.ts extract-subtitles -p ${projectDir}`);
-  } catch (error) {
-    console.error(`プロジェクト初期化中にエラーが発生しました: ${(error as Error).message}`);
-    process.exit(1);
   }
+  
+  // 設定をJSON形式で保存
+  await writeFile(configPath, JSON.stringify(config, null, 2), 'utf-8');
+  
+  console.log('プロジェクト初期化が完了しました！');
+  console.log('次のステップ:');
+  console.log(`1. 字幕を抽出: bun run index.ts extract-subtitles -p ${projectDir}`);
 }
 
 // 設定ファイルを読み込む関数
