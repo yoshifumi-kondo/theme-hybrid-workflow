@@ -327,6 +327,19 @@ async function processSplitAudio(
   chunkDurationSec: number = 600 // デフォルト10分
 ): Promise<void> {
   try {
+    // tmp ディレクトリをクリーンアップ
+    const tmpDir = join(dirname(outputSrtPath), 'tmp');
+    
+    // tmp ディレクトリが存在しない場合は作成
+    if (!existsSync(tmpDir)) {
+      await mkdir(tmpDir, { recursive: true });
+      console.log(`一時ディレクトリを作成しました: ${tmpDir}`);
+    } else {
+      // 既存の tmp ディレクトリ内のファイルをクリーンアップ
+      console.log(`一時ディレクトリをクリーンアップしています: ${tmpDir}`);
+      await cleanupDirectory(tmpDir);
+    }
+    
     // 動画の長さを取得
     const videoInfo = await getVideoDuration(videoPath);
     const videoDurationSec = videoInfo.durationSec;
@@ -347,7 +360,7 @@ async function processSplitAudio(
       console.log(`[${i+1}/${chunks}] ${formatTime(startTime)} ~ ${formatTime(endTime)} を処理中...`);
       
       // 一時的な音声ファイルのパス
-      const tempChunkAudio = `tmp/temp_chunk_${i}.mp3`;
+      const tempChunkAudio = join(tmpDir, `temp_chunk_${i}.mp3`);
       
       try {
         // FFmpegでセグメントを抽出
@@ -431,6 +444,41 @@ async function processSplitAudio(
     
   } catch (error) {
     throw new Error(`分割処理中にエラーが発生しました: ${(error as Error).message}`);
+  }
+}
+
+// 一時ディレクトリ内のファイルを削除する関数
+async function cleanupDirectory(dirPath: string): Promise<void> {
+  try {
+    // Node.jsのfsモジュールを使用してディレクトリ内のファイル一覧を取得
+    const files = await new Promise<string[]>((resolve, reject) => {
+      import('fs').then(fs => {
+        fs.readdir(dirPath, (err, files) => {
+          if (err) reject(err);
+          else resolve(files);
+        });
+      }).catch(reject);
+    });
+    
+    // 各ファイルを削除
+    for (const file of files) {
+      const filePath = join(dirPath, file);
+      await new Promise<void>((resolve, reject) => {
+        import('fs').then(fs => {
+          fs.unlink(filePath, err => {
+            if (err) console.warn(`ファイル ${filePath} の削除に失敗しました: ${err.message}`);
+            resolve();
+          });
+        }).catch(err => {
+          console.warn(`ファイル ${filePath} の削除中にエラーが発生しました: ${err.message}`);
+          resolve();
+        });
+      });
+    }
+    
+    console.log(`${files.length} 個の一時ファイルを削除しました`);
+  } catch (error) {
+    console.warn(`ディレクトリのクリーンアップ中にエラーが発生しました: ${(error as Error).message}`);
   }
 }
 
