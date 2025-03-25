@@ -1,6 +1,6 @@
 {
   "name": "theme-hybrid-workflow",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest"
@@ -13,16 +13,20 @@
     "open": "^10.1.0"
   },
   "scripts": {
-    "start": "bun run index.ts",
-    "init": "bun run index.ts init",
-    "extract-subtitles": "bun run index.ts extract-subtitles",
-    "edit-subtitles": "bun run index.ts edit-subtitles",
-    "extract-themes": "bun run index.ts extract-themes",
-    "extract-themes:gemini": "bun run index.ts extract-themes --provider google --model gemini-1.5-flash",
-    "extract-themes:openai": "bun run index.ts extract-themes --provider openai --model gpt-4-turbo",
-    "edit-themes": "bun run index.ts edit-themes",
-    "create-video": "bun run index.ts create-video",
-    "run-all": "bun run index.ts run-all",
-    "help": "bun run index.ts --help"
+    "start": "bun run src/index.ts",
+    "help": "bun run src/index.ts --help",
+    
+    "init": "bun run src/index.ts init",
+    "silent-cut": "bun run src/index.ts silent-cut",
+    "extract-subtitles": "bun run src/index.ts extract-subtitles",
+    "edit-subtitles": "bun run src/index.ts edit-subtitles",
+    "extract-themes": "bun run src/index.ts extract-themes",
+    "edit-themes": "bun run src/index.ts edit-themes",
+    "create-video": "bun run src/index.ts create-video",
+    
+    "extract-themes:gemini": "bun run src/index.ts extract-themes --provider google --model gemini-1.5-flash",
+    "extract-themes:openai": "bun run src/index.ts extract-themes --provider openai --model gpt-4-turbo",
+    
+    "run-all": "bun run src/index.ts run-all"
   }
 }
