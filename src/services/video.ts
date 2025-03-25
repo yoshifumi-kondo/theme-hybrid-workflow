@@ -148,9 +148,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 export async function processSilentCut(
   projectDir: string,
   threshold: number = -30,
-  minSilenceDuration: number = 1.0,
-  padding: number = 0.1,
-  minSegmentDuration: number = 0.5,
+  minSilenceDuration: number = 0.5,
+  padding: number = 0.05,
+  minSegmentDuration: number = 0.3,
   mode: string = 'silent'
 ): Promise<void> {
   try {
@@ -596,9 +596,9 @@ export async function processSilentCutDirect(
   videoPath: string,
   outputPath: string,
   threshold: number = -30,
-  minSilenceDuration: number = 1.0,
-  padding: number = 0.1,
-  minSegmentDuration: number = 0.5,
+  minSilenceDuration: number = 0.5,
+  padding: number = 0.05,
+  minSegmentDuration: number = 0.3,
   mode: string = 'silent'
 ): Promise<void> {
   try {

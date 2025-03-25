@@ -97,7 +97,7 @@ export function setupCommands() {
     .option('-f, --font-size <size>', 'フォントサイズ', '24')
     .option('-b, --bg-opacity <opacity>', '背景の不透明度 (0-1)', '0.5')
     .option('--cut-threshold <dB>', '無音と判定する音量しきい値 (dB)', '-30')
-    .option('--cut-duration <seconds>', '無音と判定する最小時間 (秒)', '1.0')
+    .option('--cut-duration <seconds>', '無音と判定する最小時間 (秒)', '0.5')
     .option('--cut-mode <mode>', 'カットモード (silent/jump)', 'silent')
     .action(async (options) => {
       await runAllSteps(
@@ -124,9 +124,9 @@ export function setupCommands() {
     .option('-p, --project <path>', 'プロジェクトディレクトリ')
     .argument('[videoPath]', '動画ファイルパス (プロジェクトの代わりに直接指定可能)')
     .option('-t, --threshold <dB>', '無音と判定する音量しきい値 (dB)', '-30')
-    .option('-d, --duration <seconds>', '無音と判定する最小時間 (秒)', '1.0')
-    .option('--padding <seconds>', 'カット前後に残す時間 (秒)', '0.1')
-    .option('-m, --min-segment <seconds>', '保持する最小セグメント長 (秒)', '0.5')
+    .option('-d, --duration <seconds>', '無音と判定する最小時間 (秒)', '0.5')
+    .option('--padding <seconds>', 'カット前後に残す時間 (秒)', '0.05')
+    .option('-m, --min-segment <seconds>', '保持する最小セグメント長 (秒)', '0.3')
     .option('--mode <mode>', 'カットモード (silent/jump)', 'silent')
     .option('-o, --output <path>', '出力ファイルパス', '')
     .action(async (videoPath, options) => {
@@ -209,9 +209,9 @@ async function runAllSteps(
     await processSilentCut(
       projectDir,
       silentCutOptions?.threshold || -30,
-      silentCutOptions?.duration || 1.0,
-      silentCutOptions?.padding || 0.1,
-      silentCutOptions?.minSegment || 0.5,
+      silentCutOptions?.duration,
+      silentCutOptions?.padding,
+      silentCutOptions?.minSegment,
       silentCutOptions?.mode || 'silent'
     );
     
