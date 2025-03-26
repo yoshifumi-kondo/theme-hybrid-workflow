@@ -44,7 +44,7 @@ export async function initProject(videoPath: string, projectDir: string, languag
   
   console.log('プロジェクト初期化が完了しました！');
   console.log('次のステップ:');
-  console.log(`1. 字幕を抽出: bun run index.ts extract-subtitles -p ${projectDir}`);
+  console.log(`1. 字幕を抽出: bun run extract-subtitles -p ${projectDir}`);
 }
 
 // ユーザーの確認を待つ関数

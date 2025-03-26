@@ -81,8 +81,8 @@ export async function extractThemes(
     
     console.log(`テーマを抽出し保存しました: ${config.themesFile}`);
     console.log('次のステップ:');
-    console.log(`1. テーマを確認・編集: bun run index.ts edit-themes -p ${projectDir}`);
-    console.log(`2. 最終動画を作成: bun run index.ts create-video -p ${projectDir}`);
+    console.log(`1. テーマを確認・編集: bun run edit-themes -p ${projectDir}`);
+    console.log(`2. 最終動画を作成: bun run create-video -p ${projectDir}`);
   } catch (error) {
     console.error(`テーマ抽出中にエラーが発生しました: ${(error as Error).message}`);
     process.exit(1);
@@ -409,7 +409,7 @@ export async function openThemesEditor(projectDir: string): Promise<void> {
     await open(config.themesFile);
     
     console.log('テーマを確認・編集したら、次のステップに進みます:');
-    console.log(`最終動画を作成: bun run index.ts create-video -p ${projectDir}`);
+    console.log(`最終動画を作成: bun run create-video -p ${projectDir}`);
   } catch (error) {
     console.error(`テーマエディタを開くときにエラーが発生しました: ${(error as Error).message}`);
     process.exit(1);

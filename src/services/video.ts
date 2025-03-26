@@ -192,7 +192,7 @@ export async function processSilentCut(
     await Bun.write(silenceInfoFile, ''); // ファイルを空にする
     
     console.log('次のステップ:');
-    console.log(`字幕を抽出: bun run index.ts extract-subtitles -p ${projectDir}`);
+    console.log(`字幕を抽出: bun run extract-subtitles -p ${projectDir}`);
   } catch (error) {
     console.error(`サイレントカット処理中にエラーが発生しました: ${(error as Error).message}`);
     process.exit(1);
@@ -645,4 +645,110 @@ export async function processSilentCutDirect(
     console.error(`サイレントカット処理中にエラーが発生しました: ${(error as Error).message}`);
     process.exit(1);
   }
+}
+
+// テーマごとに個別の動画を生成する関数
+export async function createThemeVideos(
+  projectDir: string,
+  fontSize: number,
+  bgOpacity: number,
+  options: {fadeTime?: number, bgStyle?: string} = {}
+): Promise<void> {
+  try {
+    const config = await loadConfig(projectDir);
+    
+    if (!existsSync(config.themesFile)) {
+      throw new Error(`テーマJSONファイルが見つかりません: ${config.themesFile}`);
+    }
+    
+    // テーマ付き動画のチェック
+    if (!existsSync(config.outputFile)) {
+      throw new Error(`テーマ付き動画ファイルが見つかりません: ${config.outputFile}。まず create-video コマンドを実行してください。`);
+    }
+    
+    // テーマJSONを読み込む
+    const themesContent = await readFile(config.themesFile, 'utf-8');
+    const themes = JSON.parse(themesContent) as ThemeEntry[];
+    
+    if (themes.length === 0) {
+      throw new Error('テーマが見つかりません。まずテーマを抽出してください。');
+    }
+    
+    // 出力ディレクトリを作成
+    const themesOutputDir = join(projectDir, 'theme_videos');
+    if (!existsSync(themesOutputDir)) {
+      await mkdir(themesOutputDir, { recursive: true });
+    }
+    
+    console.log(`テーマごとの動画を作成します...（合計: ${themes.length}テーマ）`);
+    console.log(`テーマ付き動画（${config.outputFile}）を元に分割します`);
+    
+    // 各テーマに対して個別の動画を生成
+    for (let i = 0; i < themes.length; i++) {
+      const theme = themes[i];
+      const themeNumber = i + 1;
+      const safeThemeName = theme.theme
+        .substring(0, 30)  // テーマの最初の30文字を取得
+        .replace(/[\\/:*?"<>|]/g, '_')  // ファイル名に使えない文字を置換
+        .trim();
+      
+      const outputFileName = `theme_${themeNumber}_${safeThemeName}.mp4`;
+      const outputFilePath = join(themesOutputDir, outputFileName);
+      
+      console.log(`テーマ ${themeNumber}/${themes.length} の動画を生成中: ${safeThemeName}`);
+      
+      // 開始時間と終了時間をFFmpegの入力形式に変換（秒単位）
+      const startTimeSeconds = convertTimeToSeconds(theme.start);
+      const endTimeSeconds = convertTimeToSeconds(theme.end);
+      const duration = endTimeSeconds - startTimeSeconds;
+      
+      // FFmpegを実行して動画をカットするだけ（字幕は既に埋め込まれている）
+      await new Promise<void>((resolve, reject) => {
+        const ffmpeg = spawn('ffmpeg', [
+          '-ss', startTimeSeconds.toString(),
+          '-t', duration.toString(),
+          '-i', config.outputFile, // テーマが既に埋め込まれた動画を使用
+          '-c', 'copy', // コーデックをコピー（再エンコードなし）で高速化
+          '-y', // 既存のファイルを上書き
+          outputFilePath
+        ]);
+        
+        let stderr = '';
+        ffmpeg.stderr.on('data', (data) => {
+          stderr += data.toString();
+          // 進捗表示をコンソールに出力
+          process.stderr.write('.');
+        });
+        
+        ffmpeg.on('close', (code) => {
+          process.stderr.write('\n');
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`FFmpegが終了コード ${code} で失敗しました: ${stderr}`));
+          }
+        });
+      });
+      
+      console.log(`テーマ ${themeNumber} の動画を生成しました: ${outputFilePath}`);
+    }
+    
+    console.log(`すべてのテーマ動画を生成しました。出力ディレクトリ: ${themesOutputDir}`);
+  } catch (error) {
+    console.error(`テーマごとの動画生成中にエラーが発生しました: ${(error as Error).message}`);
+    process.exit(1);
+  }
+}
+
+// SRT時間形式を秒に変換するヘルパー関数
+function convertTimeToSeconds(timeStr: string): number {
+  const [hours, minutes, secondsMs] = timeStr.split(':');
+  const [seconds, ms] = secondsMs.split(',');
+  
+  return (
+    parseInt(hours) * 3600 +
+    parseInt(minutes) * 60 +
+    parseInt(seconds) +
+    parseInt(ms) / 1000
+  );
 } 

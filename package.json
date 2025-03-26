@@ -23,6 +23,7 @@
     "extract-themes": "bun run src/index.ts extract-themes",
     "edit-themes": "bun run src/index.ts edit-themes",
     "create-video": "bun run src/index.ts create-video",
+    "create-theme-videos": "bun run src/index.ts create-theme-videos",
     
     "extract-themes:gemini": "bun run src/index.ts extract-themes --provider google --model gemini-1.5-flash",
     "extract-themes:openai": "bun run src/index.ts extract-themes --provider openai --model gpt-4-turbo",

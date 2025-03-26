@@ -99,8 +99,8 @@ export async function extractSubtitles(projectDir: string, apiKey?: string): Pro
       
       console.log(`字幕ファイルを生成しました: ${config.srtFile}`);
       console.log('次のステップ:');
-      console.log(`1. 字幕を確認・編集: bun run index.ts edit-subtitles -p ${projectDir}`);
-      console.log(`2. テーマを抽出: bun run index.ts extract-themes -p ${projectDir}`);
+      console.log(`1. 字幕を確認・編集: bun run edit-subtitles -p ${projectDir}`);
+      console.log(`2. テーマを抽出: bun run extract-themes -p ${projectDir}`);
       
     } finally {
       // 一時ファイルを削除
@@ -258,7 +258,7 @@ export async function openSubtitlesEditor(projectDir: string): Promise<void> {
     await open(config.srtFile);
     
     console.log('字幕を確認・編集したら、次のステップに進みます:');
-    console.log(`テーマを抽出: bun run index.ts extract-themes -p ${projectDir}`);
+    console.log(`テーマを抽出: bun run extract-themes -p ${projectDir}`);
   } catch (error) {
     console.error(`字幕エディタを開くときにエラーが発生しました: ${(error as Error).message}`);
     process.exit(1);

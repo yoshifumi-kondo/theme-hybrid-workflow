@@ -3,7 +3,7 @@ import { existsSync } from 'fs';
 import { initProject, waitForUserConfirmation } from '../services/project';
 import { extractSubtitles, openSubtitlesEditor } from '../services/subtitles';
 import { extractThemes, openThemesEditor } from '../services/themes';
-import { createFinalVideo, processSilentCut, processSilentCutDirect } from '../services/video';
+import { createFinalVideo, createThemeVideos, processSilentCut, processSilentCutDirect } from '../services/video';
 
 // コマンドラインオプションの設定
 export function setupCommands() {
@@ -74,6 +74,27 @@ export function setupCommands() {
     .option('--bg-style <style>', '背景スタイル (box/blur/shadow)', 'box')
     .action(async (options) => {
       await createFinalVideo(
+        options.project,
+        parseInt(options.fontSize),
+        parseFloat(options.bgOpacity),
+        {
+          fadeTime: parseFloat(options.fade),
+          bgStyle: options.bgStyle
+        }
+      );
+    });
+
+  // サブコマンド: テーマごとに動画を生成
+  program
+    .command('create-theme-videos')
+    .description('各テーマごとに個別の動画を生成')
+    .requiredOption('-p, --project <path>', 'プロジェクトディレクトリ')
+    .option('-f, --font-size <size>', 'フォントサイズ', '36')
+    .option('-b, --bg-opacity <opacity>', '背景の不透明度 (0-1)', '0.5')
+    .option('--fade <seconds>', 'フェードイン/アウト時間（秒）', '0.5')
+    .option('--bg-style <style>', '背景スタイル (box/blur/shadow)', 'box')
+    .action(async (options) => {
+      await createThemeVideos(
         options.project,
         parseInt(options.fontSize),
         parseFloat(options.bgOpacity),
@@ -236,6 +257,10 @@ async function runAllSteps(
     
     // ユーザーの確認を待つ
     await waitForUserConfirmation('テーマの確認・編集が完了したら、Enterキーを押してください...');
+    
+    // ステップ5.5: テーマごとの動画作成
+    console.log('\n--- ステップ 5.5: テーマごとの動画作成 ---');
+    await createThemeVideos(projectDir, fontSize, bgOpacity);
     
     // ステップ6: 最終動画作成
     console.log('\n--- ステップ 6: 最終動画作成 ---');
